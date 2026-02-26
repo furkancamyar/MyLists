@@ -31,12 +31,6 @@ export class CollectionsRepository {
         await tx
             .delete(collections)
             .where(eq(collections.id, collectionId));
-        await tx
-            .delete(collectionItems)
-            .where(eq(collectionItems.collectionId, collectionId));
-        await tx
-            .delete(collectionLikes)
-            .where(eq(collectionLikes.collectionId, collectionId));
     }
 
     static async replaceCollectionItems(collectionId: number, items: (typeof collectionItems.$inferInsert)[]) {
