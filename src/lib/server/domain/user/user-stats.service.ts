@@ -158,16 +158,16 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ userId });
 
-        const collectionCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
+        const tagCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            return mediaService.computeTotalCollections(userId);
+            return mediaService.computeTotalTags(userId);
         });
-        const collectionCounts = await Promise.all(collectionCountPromises);
-        const totalCollections = collectionCounts.reduce((sum, count) => sum + count, 0);
+        const tagCounts = await Promise.all(tagCountPromises);
+        const totalTags = tagCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...userPreComputedStats,
-            totalCollections,
+            totalTags,
             platinumAchievements,
             updatesPerMonth: mediaUpdatesPerMonth,
         };
@@ -194,16 +194,16 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements();
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({});
 
-        const collectionCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
+        const tagCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            return mediaService.computeTotalCollections();
+            return mediaService.computeTotalTags();
         });
-        const collectionCounts = await Promise.all(collectionCountPromises);
-        const totalCollections = collectionCounts.reduce((sum, count) => sum + count, 0);
+        const tagCounts = await Promise.all(tagCountPromises);
+        const totalTags = tagCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...platformPreComputedStats,
-            totalCollections,
+            totalTags,
             platinumAchievements,
             updatesPerMonth: mediaUpdatesPerMonth,
         };
@@ -248,7 +248,7 @@ export class UserStatsService {
         if (mediaIds.length === 0) return emptyResult;
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = await mediaService.getMediaForActivity(mediaIds) as MediaInfo[];
+        const mediaDetails = await mediaService.getMediaDetailsByIds(mediaIds);
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
         return this._aggActivityResults(mediaType, mediaResults, metadataMap);
@@ -294,7 +294,7 @@ export class UserStatsService {
         if (mediaIds.length === 0) return { completed: [], progressed: [], redo: [] };
 
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        const mediaDetails = (await mediaService.getMediaForActivity(mediaIds)) as MediaInfo[];
+        const mediaDetails = (await mediaService.getMediaDetailsByIds(mediaIds));
         const metadataMap = new Map(mediaDetails.map((m) => [m.id, m]));
 
         const redo: MediaData[] = [];

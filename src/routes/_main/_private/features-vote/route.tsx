@@ -6,6 +6,7 @@ import {Badge} from "@/lib/client/components/ui/badge";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Textarea} from "@/lib/client/components/ui/textarea";
+import {getZodMutationError} from "@/lib/utils/helpers";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {CalendarClock, ChevronUp, Crown, Settings2} from "lucide-react";
 import {featureVotesOptions} from "@/lib/client/react-query/query-options/query-options";
@@ -50,15 +51,6 @@ function FeatureVotesPage() {
         return [...apiData.items].sort((a, b) => b.totalVotes - a.totalVotes);
     }, [apiData.items]);
 
-    const getMutationError = (error: any) => {
-        if (!error) return null;
-
-        if (error.issues && Array.isArray(error.issues) && error.issues.length > 0) {
-            return error.issues[0].message;
-        }
-
-        return error.message || "An unexpected error occurred";
-    };
 
     const handleAddNewFeature = () => {
         createFeatureMutation.mutate({ data: { title: newTitle.trim(), description: newDescription.trim() } }, {
@@ -127,7 +119,7 @@ function FeatureVotesPage() {
                             />
                             {createFeatureMutation.isError &&
                                 <p className="text-xs text-red-400">
-                                    {getMutationError(createFeatureMutation.error)}
+                                    {getZodMutationError(createFeatureMutation.error)}
                                 </p>
                             }
                             <div className="flex items-center justify-center">

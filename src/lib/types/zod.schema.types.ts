@@ -2,7 +2,6 @@ import * as z from "zod";
 import {
     AchievementDifficulty,
     ApiProviderType,
-    CollectionAction,
     FeatureStatus,
     FeatureVoteType,
     GamesPlatformsEnum,
@@ -12,6 +11,7 @@ import {
     RatingSystemType,
     RoleType,
     Status,
+    TagAction,
     UpdateType
 } from "@/lib/utils/enums";
 
@@ -23,6 +23,8 @@ export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 export type SectionActivity = z.infer<typeof getSectionActivitySchema>;
+export type CreateCollection = z.infer<typeof createCollectionSchema>;
+
 
 const paginationSchema = z.object({
     page: z.coerce.number().int().positive().optional().catch(undefined),
@@ -85,7 +87,7 @@ const mediaListArgsSchema = paginationSchema.extend({
     hideCommon: z.coerce.boolean().optional().catch(undefined),
     status: z.array(z.enum(Status)).optional().catch(undefined),
     genres: z.array(z.string()).optional().catch(undefined),
-    collections: z.array(z.string()).optional().catch(undefined),
+    tags: z.array(z.string()).optional().catch(undefined),
     langs: z.array(z.string()).optional().catch(undefined),
     directors: z.array(z.string()).optional().catch(undefined),
     publishers: z.array(z.string()).optional().catch(undefined),
@@ -130,7 +132,7 @@ export const navbarSearchSchema = z.object({
     page: z.coerce.number().int().positive(),
 });
 
-const collectionSchema = z.object({
+const tagSchema = z.object({
     name: z.string(),
     oldName: z.string().optional(),
 });
@@ -178,14 +180,14 @@ export const deleteUserUpdatesSchema = z.object({
     updateIds: z.array(z.number().int().positive()),
 });
 
-export const userCollectionNamesSchema = z.object({
+export const userTagNamesSchema = z.object({
     mediaType: z.enum(MediaType),
 });
 
-export const editUserCollectionSchema = z.object({
-    collection: collectionSchema,
+export const editUserTagSchema = z.object({
+    tag: tagSchema,
+    action: z.enum(TagAction),
     mediaType: z.enum(MediaType),
-    action: z.enum(CollectionAction),
     mediaId: z.coerce.number().int().positive().optional(),
 });
 
@@ -314,7 +316,7 @@ export const adminRefreshSchema = z.object({
 export const postFeatureRequestSchema = z.object({
     title: z.string().trim()
         .min(3, "Title must be at least 3 characters long")
-        .max(80, "Title is too long (maximum 80 characters)"),
+        .max(80, "Title is too long (max 80 characters)"),
     description: z.string().trim()
         .max(400, "Description cannot exceed 400 characters")
         .optional(),
@@ -333,4 +335,47 @@ export const postFeatureStatusSchema = z.object({
 
 export const postFeatureDeleteSchema = z.object({
     featureId: z.coerce.number().int().positive(),
+});
+
+const collectionItemSchema = z.object({
+    mediaId: z.coerce.number().int().positive(),
+    mediaName: z.string().optional(), // Added for UI display
+    mediaCover: z.string().optional(), // Added for UI display
+    annotation: z.string().trim().max(500).optional().nullable(),
+});
+
+export const createCollectionSchema = z.object({
+    ordered: z.boolean(),
+    privacy: z.enum(PrivacyType),
+    mediaType: z.enum(MediaType),
+    items: z.array(collectionItemSchema).min(1, "Collection must contain at least 1 item."),
+    title: z.string().trim()
+        .min(3, "Title must be at least 3 characters long")
+        .max(100, "Title is too long (max 100 characters)"),
+    description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
+});
+
+export const updateCollectionSchema = z.object({
+    ordered: z.boolean(),
+    privacy: z.enum(PrivacyType),
+    collectionId: z.coerce.number().int().positive(),
+    items: z.array(collectionItemSchema).min(1, "Collection must contain at least 1 item."),
+    title: z.string().trim()
+        .min(3, "Title must be at least 3 characters long")
+        .max(100, "Title is too long (max 100 characters)"),
+    description: z.string().trim().max(400, "Description cannot exceed 400 characters").optional().nullable(),
+});
+
+export const collectionIdSchema = z.object({
+    collectionId: z.coerce.number().int().positive(),
+});
+
+export const userCollectionsSchema = z.object({
+    username: z.string(),
+    mediaType: z.enum(MediaType).optional(),
+});
+
+export const communityCollectionsSchema = paginationSchema.extend({
+    search: z.string().optional().catch(undefined),
+    mediaType: z.enum(MediaType).optional().catch(undefined),
 });

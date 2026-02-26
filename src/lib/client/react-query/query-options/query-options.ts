@@ -1,6 +1,7 @@
 import {NotifTab} from "@/lib/types/base.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
+import {CommunitySearch} from "@/lib/types/collections.types";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getFeatureVotes} from "@/lib/server/functions/feature-votes";
@@ -11,13 +12,14 @@ import {getAdminAllUpdatesHistory} from "@/lib/server/functions/admin";
 import {MediaListArgs, SearchType} from "@/lib/types/zod.schema.types";
 import {infiniteQueryOptions, queryOptions} from "@tanstack/react-query";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
+import {getUserMediaHistory, getUserTagNames} from "@/lib/server/functions/user-media";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
-import {getUserCollectionNames, getUserMediaHistory} from "@/lib/server/functions/user-media";
 import {getMonthlyActivity, getSectionActivity, getUserStats} from "@/lib/server/functions/user-stats";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
+import {getCommunityCollections, getEditCollectionDetails, getReadCollectionDetails, getUserCollections} from "@/lib/server/functions/collections";
 import {getAllUpdatesHistory, getUserProfile, getUserProfileHeader, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
-import {getCollectionsViewFn, getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
+import {getMediaListFilters, getMediaListSearchFilters, getMediaListSF, getTagsViewFn, getUserListHeaderSF} from "@/lib/server/functions/media-lists";
 
 
 export const authOptions = queryOptions({
@@ -101,9 +103,9 @@ export const userListHeaderOption = (mediaType: MediaType, username: string) => 
 });
 
 
-export const collectionsViewOptions = (mediaType: MediaType, username: string) => queryOptions({
-    queryKey: ["collectionsView", mediaType, username] as const,
-    queryFn: () => getCollectionsViewFn({ data: { mediaType, username } }),
+export const tagsViewOptions = (mediaType: MediaType, username: string) => queryOptions({
+    queryKey: ["tagsView", mediaType, username] as const,
+    queryFn: () => getTagsViewFn({ data: { mediaType, username } }),
 })
 
 
@@ -223,9 +225,9 @@ export const sectionActivityQueryOptions = (username: string, params: {
 }
 
 
-export const collectionNamesOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
-    queryKey: ["collectionNames", mediaType] as const,
-    queryFn: () => getUserCollectionNames({ data: { mediaType } }),
+export const tagNamesOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
+    queryKey: ["tagNames", mediaType] as const,
+    queryFn: () => getUserTagNames({ data: { mediaType } }),
     enabled: isOpen,
 });
 
@@ -247,6 +249,30 @@ export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: stri
 export const platformStatsOptions = (search: { mediaType?: MediaType }) => queryOptions({
     queryKey: ["platformStats", search],
     queryFn: () => getPlatformStats({ data: search }),
+});
+
+
+export const userCollectionsOptions = (username: string, mediaType?: MediaType) => queryOptions({
+    queryKey: ["collections", "user", username, mediaType] as const,
+    queryFn: () => getUserCollections({ data: { username, mediaType } }),
+});
+
+
+export const collectionDetailsReadOptions = (collectionId: number) => queryOptions({
+    queryKey: ["collections", "details", "read", collectionId] as const,
+    queryFn: () => getReadCollectionDetails({ data: { collectionId } }),
+});
+
+
+export const collectionDetailsEditOptions = (collectionId: number) => queryOptions({
+    queryKey: ["collections", "details", "edit", collectionId] as const,
+    queryFn: () => getEditCollectionDetails({ data: { collectionId } }),
+});
+
+
+export const communityCollectionsOptions = (search: CommunitySearch) => queryOptions({
+    queryKey: ["collections", "community", search] as const,
+    queryFn: () => getCommunityCollections({ data: search }),
 });
 
 
