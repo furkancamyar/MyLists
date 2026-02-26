@@ -76,6 +76,7 @@
         "zod": "^4.3.6"
     },
     "devDependencies": {
+        "@libsql/client": "^0.17.0",
         "@eslint-react/eslint-plugin": "^2.13.0",
         "@eslint/js": "^10.0.1",
         "@react-email/preview-server": "5.2.8",

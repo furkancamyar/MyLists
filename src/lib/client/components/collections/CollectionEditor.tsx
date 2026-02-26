@@ -53,12 +53,15 @@ export const CollectionEditor = ({ form, onSubmit, mediaType, submitLabel, isSub
             return;
         }
 
-        append({
-            annotation: "",
-            mediaId: item.mediaId,
-            mediaName: item.mediaName,
-            mediaCover: item.mediaCover,
-        });
+        append(
+            {
+                annotation: "",
+                mediaId: item.mediaId,
+                mediaName: item.mediaName,
+                mediaCover: item.mediaCover,
+            },
+            { shouldFocus: false },
+        );
     };
 
     return (
@@ -140,13 +143,11 @@ export const CollectionEditor = ({ form, onSubmit, mediaType, submitLabel, isSub
                             render={() => (
                                 <FormItem>
                                     <FormLabel>Items ({fields.length})</FormLabel>
-
                                     <CollectionSearch
                                         onAdd={handleAddItem}
                                         mediaType={mediaType}
                                         disabled={isSubmitting}
                                     />
-
                                     <FormMessage/>
 
                                     {fields.length === 0 ?
