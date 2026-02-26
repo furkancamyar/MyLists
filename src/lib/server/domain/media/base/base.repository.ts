@@ -7,8 +7,8 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {JobType, MediaType, Status, TagAction} from "@/lib/utils/enums";
 import {resolvePagination, resolveSorting} from "@/lib/server/database/pagination";
-import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, or, SQL, sql} from "drizzle-orm";
+import {animeList, booksList, collectionItems, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
+import {and, asc, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notExists, notInArray, or, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     ExpandedListFilters,
@@ -92,14 +92,21 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig> {
             .from(mediaTable);
     }
 
-    async getNonListMediaIds() {
+    async getOrphanedMediaIds(mediaType: MediaType) {
         const { mediaTable, listTable } = this.config;
 
-        const mediaToDelete = await getDbClient()
-            .select({ id: sql<number>`${mediaTable.id}` })
+        const tx = getDbClient();
+        const mediaToDelete = await tx
+            .select({ id: mediaTable.id })
             .from(mediaTable)
             .leftJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(isNull(listTable.userId));
+            .where(and(
+                isNull(listTable.userId),
+                notExists(tx.select()
+                    .from(collectionItems)
+                    .where(and(eq(collectionItems.mediaId, mediaTable.id), eq(collectionItems.mediaType, mediaType)))
+                )
+            ));
 
         return mediaToDelete.map((media) => media.id);
     }

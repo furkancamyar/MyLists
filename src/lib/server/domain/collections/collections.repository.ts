@@ -1,9 +1,9 @@
-import {and, asc, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType} from "@/lib/utils/enums";
-import {collectionItems, collectionLikes, collections, user} from "@/lib/server/database/schema";
 import {paginate} from "@/lib/server/database/pagination";
 import {CommunitySearch} from "@/lib/types/collections.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {and, asc, count, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
+import {collectionItems, collectionLikes, collections, user} from "@/lib/server/database/schema";
 
 
 export class CollectionsRepository {
@@ -26,9 +26,17 @@ export class CollectionsRepository {
     }
 
     static async deleteCollection(collectionId: number) {
-        await getDbClient()
+        const tx = getDbClient();
+
+        await tx
             .delete(collections)
             .where(eq(collections.id, collectionId));
+        await tx
+            .delete(collectionItems)
+            .where(eq(collectionItems.collectionId, collectionId));
+        await tx
+            .delete(collectionLikes)
+            .where(eq(collectionLikes.collectionId, collectionId));
     }
 
     static async replaceCollectionItems(collectionId: number, items: (typeof collectionItems.$inferInsert)[]) {
