@@ -3,7 +3,7 @@ import {relations} from "drizzle-orm/relations";
 import {customJson} from "@/lib/server/database/custom-types";
 import {taskHistory} from "@/lib/server/database/schema/admin.schema";
 import {MediaType, SocialState, Status, UpdateType} from "@/lib/utils/enums";
-import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {index, integer, real, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 import {
     animeList,
     animeTags,
@@ -68,8 +68,8 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
     statusCounts: customJson<Record<Status, number>>("status_counts").default(sql`'{}'`).notNull(),
     averageRating: real(),
 }, (table) => [
-    index("ix_user_media_settings_user_id").on(table.userId),
     index("ix_user_media_settings_media_type").on(table.mediaType),
+    uniqueIndex("ux_user_id_media_type").on(table.userId, table.mediaType),
 ]);
 
 
